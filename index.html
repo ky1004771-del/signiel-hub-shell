@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SIGNIEL HUB</title>
+<link rel="icon" href="favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1b1841">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="SIGNIEL HUB">
+<style>
+html,body{margin:0;height:100%;background:#1b1841;color:#f4f1e8;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif}
+iframe{position:fixed;inset:0;width:100%;height:100%;border:0;background:#1b1841}
+#fallback{position:fixed;left:0;right:0;top:0;padding:8px 12px;text-align:center;font-size:12px;background:#12151b;display:none;z-index:5}
+#fallback a{color:#f2d675}
+#sgInstallBtn{position:fixed;right:16px;bottom:16px;z-index:900;display:none;align-items:center;gap:8px;padding:12px 16px;border:1px solid rgba(212,175,55,.55);border-radius:14px;background:linear-gradient(135deg,#d4af37,#a9821f);color:#08090b;font-weight:800;font-size:13px;box-shadow:0 10px 30px rgba(0,0,0,.45);cursor:pointer}
+#sgInstallBtn.on{display:flex}
+#sgIosHint{position:fixed;left:12px;right:12px;bottom:12px;z-index:900;display:none;padding:14px 16px;border:1px solid rgba(212,175,55,.4);border-radius:14px;background:#12151b;font-size:13px;line-height:1.6}
+#sgIosHint.on{display:block}
+</style>
+</head>
+<body>
+<!-- ▼▼ 여기에 앱스 스크립트 웹앱 주소(…/exec)를 넣으세요 ▼▼ -->
+<script>var APP_URL = "https://script.google.com/macros/s/AKfycbxjgwxYjlVZxkWqCCDIh9a6YhNhq1XpjWA0ejIJM1cUiyAIZT6s-BPljiK_I33lnyc0/exec";</script>
+<!-- ▲▲ -->
+<div id="fallback"></div>
+<iframe id="app" allow="clipboard-write; fullscreen" referrerpolicy="no-referrer-when-downgrade"></iframe>
+<button id="sgInstallBtn" type="button">⬇ 바로가기 설치<span id="sgInstallClose" aria-label="닫기" style="opacity:.6;margin-left:4px">✕</span></button>
+<div id="sgIosHint">⬇ 아이폰은 사파리 하단의 <b>공유 버튼</b> → <b>홈 화면에 추가</b>를 눌러 주세요. <span id="sgIosClose" style="float:right;opacity:.6;cursor:pointer">✕</span></div>
+<script>
+(function(){
+  var f=document.getElementById('app'), fb=document.getElementById('fallback');
+  if(/^https:\/\/script\.google\.com\//.test(APP_URL)){
+    f.src=APP_URL;
+    var t=setTimeout(function(){ fb.innerHTML='화면이 안 보이면 <a href="'+APP_URL+'">여기를 눌러 직접 열기</a>'; fb.style.display='block'; },8000);
+    f.addEventListener('load',function(){ clearTimeout(t); fb.style.display='none'; });
+  } else {
+    fb.textContent='index.html 안의 APP_URL에 앱스 스크립트 주소를 넣어 주세요.'; fb.style.display='block';
+  }
+  if('serviceWorker' in navigator){ window.addEventListener('load',function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); }); }
+  var standalone=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+  if(standalone) return;
+  var btn=document.getElementById('sgInstallBtn'), hint=document.getElementById('sgIosHint'), deferred=null, dismissed=false;
+  try{ dismissed=localStorage.getItem('SIGNIEL_HUB_INSTALL_DISMISSED')==='1'; }catch(e){}
+  window.addEventListener('beforeinstallprompt',function(e){ e.preventDefault(); deferred=e; if(!dismissed) btn.classList.add('on'); });
+  btn.addEventListener('click',function(ev){
+    if(ev.target.id==='sgInstallClose'){ btn.classList.remove('on'); try{localStorage.setItem('SIGNIEL_HUB_INSTALL_DISMISSED','1');}catch(e){} return; }
+    if(!deferred) return;
+    deferred.prompt(); deferred.userChoice.then(function(){ deferred=null; btn.classList.remove('on'); });
+  });
+  window.addEventListener('appinstalled',function(){ btn.classList.remove('on'); });
+  if(/iphone|ipad|ipod/i.test(navigator.userAgent) && !dismissed){
+    hint.classList.add('on');
+    document.getElementById('sgIosClose').onclick=function(){ hint.classList.remove('on'); try{localStorage.setItem('SIGNIEL_HUB_INSTALL_DISMISSED','1');}catch(e){} };
+  }
+})();
+</script>
+</body>
+</html>
